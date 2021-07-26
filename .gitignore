@@ -1,3 +1,7 @@
+# Output
+build
+.vs
+
 # Prerequisites
 *.d
 
