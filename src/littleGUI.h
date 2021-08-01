@@ -1,40 +1,124 @@
 #pragma once
 
-#include <memory>
+#include <utility>
 
-#if defined(LITTLE_RELEASE) || defined (LITTLE_DIST)
-#define NDEBUG
-#endif
-#include <cassert>
+/*
+----------------------------------------
+----- SECTION (LilArray) ---------------
+----------------------------------------
+LilArray<T> is a fast, dynamic array intended for internal
+use as a replacement for std::vector<T>. It's not strictly
+necessary but some implementations of std::vector<T> are
+very slow so it may benefit performance in some instances.
+ 
+-- TODO --
+1) Consider adding macro to use std::vector<T> at compile time. (would require function naming changes)
+*/
 
-// Efficient dynamic array for us to use throughout library
 template <typename T>
-struct LilArray
-{
-  using Type = T;
+class LilArray {
+  std::size_t Size;
+  std::size_t MaxSize;
+  T* Array;
+  
+public:
+  using ValueType = T;
   using Iterator = T*;
-  using ConstIterator = const Iterator;
+  using ConstIterator = const T*;
 
-  uint32_t Size;
-  uint32_t Capacity;
-  T* Data;
+public:
+  LilArray() noexcept
+    : Size(0), MaxSize(0), Array(nullptr)
+  {
+  }
 
-  inline LilArray() { Size = 0; Capacity = 0; Data = nullptr; }
-  inline LilArray(uint32_t size) { Size = 0; Capacity = Size; Data = (T*)malloc(size * (uint32_t)sizeof(T)); }
-  inline ~LilArray() { Clear(); Size = 0; Capacity = 0; Data = nullptr; }
+  LilArray(std::size_t size)
+    : Size(0), MaxSize(0), Array(nullptr)
+  {
+    Array = (T*) operator new(size * sizeof(T));
+    MaxSize = size;
+  }
 
-  inline T& operator[](int index) { assert(index >= 0 && (uint32_t)index < Size); return Data[index]; }
-  inline const T& operator[](int index) const { assert(index >= 0 && index < Size); return Data[index]; }
+  ~LilArray() noexcept
+  {
+    Clear();
+  }
 
-  inline uint32_t _NextSize() const { return Size ? (uint32_t)((Size * 3) / 2) : 8; }
-  inline bool Empty() const { return m_Size == 0; }
-  inline void Clear() { if (Capacity == 0) return; free(Data); Size = 0; Capacity = 0; Data = nullptr; }
-  inline void Resize(uint32_t size) { if (size <= Capacity) return; T* tmp = Data; Data = (T*)malloc(size * (uint32_t)sizeof(T)); memcpy(Data, tmp, Size * (uint32_t)sizeof(T)); Capacity = size; }
-  inline void PushBack(const T& val) { if (Size == Capacity) Resize(_NextSize()); Data[Size] = val; Size++; }
-  inline void PopBack() { assert(Size > 0); Size--; }
+  T& operator[](std::size_t index) noexcept { return Array[index]; }
+  const T& operator[](std::size_t index) const noexcept { return Array[index]; }
 
-  inline Iterator begin() { return Data; }
-  inline Iterator end() { return Data + Size; }
-  inline ConstIterator cbegin() const { return Data; }
-  inline ConstIterator cend() const { return Data + Size; }
+  bool Empty() const noexcept { return Size == 0; }
+  
+  void Clear() noexcept
+  {
+    for (int i = 0; i < Size; ++i)
+      Array[i].~T();
+    operator delete(Array, MaxSize * sizeof(T));
+   
+    Array = nullptr;
+    Size = 0;
+    MaxSize = 0;
+  }
+  
+  void Reserve(std::size_t size)
+  {
+    if (size <= MaxSize)
+      return;
+
+    T* tmp = (T*) operator new(size * sizeof(T));
+
+    for (int i = 0; i < Size; i++)
+      new (&tmp[i]) T(std::move(Array[i]));
+
+    for (int i = 0; i < Size; ++i)
+      Array[i].~T();
+
+    operator delete(Array, MaxSize * sizeof(T));
+    Array = tmp;
+
+    MaxSize = size;
+  }
+  
+  void PushBack(const T& val)
+  {
+    if (Size == MaxSize)
+      Reserve(NextSize());
+    
+    new(&Array[Size]) T(val);
+    Size++;
+  }
+
+  void PushBack(T&& val)
+  {
+    if (Size == MaxSize)
+      Reserve(NextSize());
+
+    new(&Array[Size]) T(std::move(val));
+    Size++;
+  }
+  
+  template<typename... Args>
+  void EmplaceBack(Args&&... args)
+  {
+    if (Size == MaxSize)
+      Reserve(NextSize());
+    
+    new(&Array[Size]) T(args...);
+    Size++;
+  }
+  
+  Iterator begin() { return Array; }
+  Iterator end() { return Array + Size; }
+  Iterator rbegin() { return Array + Size; }
+  Iterator rend() { return Array; }
+  ConstIterator cbegin() const { return Array; }
+  ConstIterator cend() const { return Array + Size; }
+  ConstIterator crbegin() const { return Array + Size; }
+  ConstIterator crend() const { return Array; }
+  
+private:
+  std::size_t NextSize() noexcept
+  {
+    return MaxSize ? static_cast<std::size_t>(MaxSize + MaxSize / 2) : 8; // Use geometric growth of 1.5 (close to golden ratio; couldn't be a bad number)
+  }
 };

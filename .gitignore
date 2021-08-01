@@ -1,6 +1,7 @@
 # Output
 build
 .vs
+*.DS_Store
 
 # Prerequisites
 *.d

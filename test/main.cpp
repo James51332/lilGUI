@@ -1,28 +1,21 @@
-#include "littleGUI.h"
+#include "GLFW/glfw3.h"
 
-#include <iostream>
-
-struct Vec2 {
-  float x, y;
-};
-
-inline std::ostream& operator<<(std::ostream& stream, const Vec2& val)
+int main()
 {
-  return stream << val.x << ", " << val.y;
-}
-
-int main() {
-  LilArray<Vec2> vectors;
-
-  for (float i = 0; i < 10; ++i)
+  if (!glfwInit())
+    return -1;
+  
+  GLFWwindow* window = glfwCreateWindow(800, 600, "LilWindow", nullptr, nullptr);
+  glfwMakeContextCurrent(window);
+  
+  while (!glfwWindowShouldClose(window))
   {
-    vectors.PushBack({ i, i*i });
+    glfwPollEvents();
+    
+    
+    glfwSwapBuffers(window);
   }
   
-  for (auto& val : vectors)
-  {
-    std::cout << val << std::endl;
-  }
-
-  return 0;
+  glfwDestroyWindow(window);
+  glfwTerminate();
 }

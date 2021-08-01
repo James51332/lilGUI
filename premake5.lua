@@ -1,10 +1,10 @@
-workspace "littleGUI"
+workspace "lilGUI"
   location "build"
   architecture "x86_64"
   language "C++"
   cppdialect "C++17"
   staticruntime "On"
-  startproject "testGUI"
+  startproject "lilTest"
 
   configurations
   {
@@ -18,7 +18,7 @@ workspace "littleGUI"
     "MultiProcessorCompile"
   }
 
-project "littleGUI"
+project "lilGUI"
   location "build"
   kind "StaticLib"
   
@@ -46,12 +46,12 @@ project "littleGUI"
     defines "LITTLE_DIST"
     optimize "Full"
 
-project "testGUI"
+project "lilTest"
   location "build"
   kind "ConsoleApp"
 
-  targetdir "build/testGUI/bin"
-  objdir "build/testGUI/bin-obj"
+  targetdir "build/lilTest/bin"
+  objdir "build/lilTest/bin-obj"
 
   files
   {
@@ -61,26 +61,37 @@ project "testGUI"
 
   links
   {
-    "littleGUI"
+    "lilGUI"
   }
 
   includedirs
   {
-    "src"
+    "src",
+    "includes"
   }
 
   filter "configurations:Debug"
     runtime "Debug"
-    defines "LITTLE_DEBUG"
+    defines "LIL_DEBUG"
     symbols "On"
 
   filter "configurations:Release"
     runtime "Release"
-    defines "LITTLE_RELEASE"
+    defines "LIL_RELEASE"
     optimize "On"
 
   filter "configurations:Dist"
     runtime "Release"  
-    defines "LITTLE_DIST"
+    defines "LIL_DIST"
     optimize "Full"
-  
+    
+  filter "system:macosx"
+    defines "LIL_MACOS"
+    
+    libdirs "thirdparty/macos"
+    links
+    {
+      "Cocoa.framework",
+      "IOKit.framework",
+      "glfw3"
+    }
