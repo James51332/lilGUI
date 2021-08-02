@@ -64,8 +64,11 @@ project "lilTest"
     "lilGUI"
   }
 
-  includedirs "src"
-  sysincludedirs "includes"
+  sysincludedirs
+  {
+    "src",
+    "includes"
+  }
 
   filter "configurations:Debug"
     runtime "Debug"
