@@ -27,6 +27,12 @@ int main()
   GLFWwindow* window = glfwCreateWindow(800, 600, "LilWindow", nullptr, nullptr);
   glfwMakeContextCurrent(window);
   
+  // 3) Set Resize Callback
+  glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height)
+  {
+    LilRenderer::OnResize(static_cast<float>(width), static_cast<float>(height));
+  });
+  
   // 3) Initialize GLAD
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
   {
