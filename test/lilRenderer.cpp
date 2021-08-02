@@ -71,7 +71,7 @@ void LilRenderer::Init()
   if (!success)
   {
     glGetProgramInfoLog(s_Data.ShaderProgram, 512, NULL, infoLog);
-    std::cout << " " << infoLog << std::endl;
+    std::cout << "Shader Failed to Link" << infoLog << std::endl;
   }
   
   // 4) Clean Up Shaders
