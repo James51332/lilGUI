@@ -64,11 +64,8 @@ project "lilTest"
     "lilGUI"
   }
 
-  includedirs
-  {
-    "src",
-    "includes"
-  }
+  includedirs "src"
+  sysincludedirs "includes"
 
   filter "configurations:Debug"
     runtime "Debug"
@@ -93,5 +90,6 @@ project "lilTest"
     {
       "Cocoa.framework",
       "IOKit.framework",
-      "glfw3"
+      "glfw3",
+      "glad"
     }
