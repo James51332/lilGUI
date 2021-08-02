@@ -102,11 +102,12 @@ void LilRenderer::Init()
   
   // 6) Create LilContext
   Lil::CreateContext();
-  Lil::GetContext().DrawList.PushRect(-0.25f, -0.25f, 0.5f, 0.5f);
 }
 
 void LilRenderer::Terminate()
 {
+  Lil::DestroyContext();
+  
   glDeleteVertexArrays(1, &s_Data.VAO);
   glDeleteBuffers(1, &s_Data.VBO);
   glDeleteBuffers(1, &s_Data.IBO);
@@ -115,32 +116,44 @@ void LilRenderer::Terminate()
 
 void LilRenderer::Begin()
 {
-
+  for (auto& drawList : Lil::GetDrawLists())
+  {
+    drawList.Clear();
+  }
 }
 
 void LilRenderer::End()
 {
-  LilDrawList& drawList = Lil::GetContext().DrawList;
   
-  glBindBuffer(GL_ARRAY_BUFFER, s_Data.VBO);
-  glBufferData(GL_ARRAY_BUFFER,
-               drawList.VtxArray.GetSize() * sizeof(LilVtx),
-               &drawList.VtxArray[0],
-               GL_STREAM_DRAW);
+  for (auto& drawList : Lil::GetDrawLists())
+  {
   
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_Data.IBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-               drawList.IdxArray.GetSize() * sizeof(LilIdx),
-               &drawList.IdxArray[0],
-               GL_STREAM_DRAW);
-  
-  glUseProgram(s_Data.ShaderProgram);
-  glBindVertexArray(s_Data.VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, s_Data.VBO);
+    glBufferData(GL_ARRAY_BUFFER,
+                 drawList.VtxArray.GetSize() * sizeof(LilVtx),
+                 &drawList.VtxArray[0],
+                 GL_STREAM_DRAW);
+    
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_Data.IBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                 drawList.IdxArray.GetSize() * sizeof(LilIdx),
+                 &drawList.IdxArray[0],
+                 GL_STREAM_DRAW);
+    
+    glUseProgram(s_Data.ShaderProgram);
+    glBindVertexArray(s_Data.VAO);
  
-  // already bound
-  // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_Data.IBO);
+    // already bound
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_Data.IBO);
+    
+    glDrawElements(GL_TRIANGLES, drawList.IdxArray.GetSize(), GL_UNSIGNED_SHORT, 0);
+    
+  }
   
-  glDrawElements(GL_TRIANGLES, drawList.IdxArray.GetSize(), GL_UNSIGNED_SHORT, 0);
+  glUseProgram(0);
+  glBindVertexArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void LilRenderer::OnResize(float width, float height)

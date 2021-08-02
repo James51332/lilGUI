@@ -49,9 +49,15 @@ int main()
     glfwPollEvents();
       
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     LilRenderer::Begin();
+    
+    // Temporary API
+    Lil::GetDrawLists()[0].PushRect({-0.5f, -0.5f}, {0.0f, 0.0f});
+    Lil::GetDrawLists()[0].PushRect({0.25f, 0.25f}, {0.5f, 0.5f});
+    Lil::GetDrawLists()[0].PushRect({-0.5f, 0.5f}, {0.0f, 1.0f});
+    
     LilRenderer::End();
 
     glfwSwapBuffers(window);

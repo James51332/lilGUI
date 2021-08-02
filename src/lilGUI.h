@@ -69,7 +69,7 @@ public:
   {
     if (size <= MaxSize)
       return;
-
+      
     T* tmp = (T*) operator new(size * sizeof(T));
 
     for (int i = 0; i < Size; i++)
@@ -203,6 +203,9 @@ struct LilVtx
   
   LilVtx(const LilVec3& pos, const LilVec2& uv, LilU32 color)
     : Pos(pos), UV(uv), Color(color) {}
+  
+  LilVtx()
+    : Pos(), UV(), Color(0x7fffffff) {}
 };
 
 using LilIdx = unsigned short;
@@ -211,8 +214,10 @@ struct LilDrawList
 {
   LilArray<LilVtx> VtxArray;
   LilArray<LilIdx> IdxArray;
+  LilU32 VtxOffset = 0;
   
-  void PushRect(float x, float y, float w, float h, LilU32 color = 0x7fffffff);
+  void Clear();
+  void PushRect(const LilVec2& min, const LilVec2& max, LilU32 color = 0x7fffffff);
 };
 
 /*
@@ -233,7 +238,7 @@ context.
 class LilContext
 {
 public:
-  LilDrawList DrawList;
+  LilArray<LilDrawList> DrawLists; // I'm currently thinking each window will have a drawList
 };
 
 namespace Lil
@@ -241,5 +246,8 @@ namespace Lil
 
 void CreateContext();
 LilContext& GetContext();
+void DestroyContext();
+
+LilArray<LilDrawList>& GetDrawLists();
 
 } // namespace Lil

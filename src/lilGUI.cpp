@@ -7,19 +7,28 @@
 --------------------------------------------------
 */
 
-void LilDrawList::PushRect(float x, float y, float w, float h, LilU32 color)
+void LilDrawList::Clear()
 {
-  VtxArray.EmplaceBack(LilVec3(x + 0, y + 0, 0.0f), LilVec2(1.0f), color);
-  VtxArray.EmplaceBack(LilVec3(x + w, y + 0, 0.0f), LilVec2(1.0f), color);
-  VtxArray.EmplaceBack(LilVec3(x + w, y + h, 0.0f), LilVec2(1.0f), color);
-  VtxArray.EmplaceBack(LilVec3(x + 0, y + h, 0.0f), LilVec2(1.0f), color);
+  VtxArray.Clear();
+  IdxArray.Clear();
+  VtxOffset = 0;
+}
+
+void LilDrawList::PushRect(const LilVec2& min, const LilVec2& max, LilU32 color)
+{
+  VtxArray.EmplaceBack(LilVec3(min.x, min.y, 0.0f), LilVec2(1.0f), color);
+  VtxArray.EmplaceBack(LilVec3(max.x, min.y, 0.0f), LilVec2(1.0f), color);
+  VtxArray.EmplaceBack(LilVec3(max.x, max.y, 0.0f), LilVec2(1.0f), color);
+  VtxArray.EmplaceBack(LilVec3(min.x, max.y, 0.0f), LilVec2(1.0f), color);
   
-  IdxArray.PushBack(0);
-  IdxArray.PushBack(1);
-  IdxArray.PushBack(2);
-  IdxArray.PushBack(0);
-  IdxArray.PushBack(2);
-  IdxArray.PushBack(3);
+  IdxArray.PushBack(VtxOffset);
+  IdxArray.PushBack(VtxOffset + 1);
+  IdxArray.PushBack(VtxOffset + 2);
+  IdxArray.PushBack(VtxOffset);
+  IdxArray.PushBack(VtxOffset + 2);
+  IdxArray.PushBack(VtxOffset + 3);
+  
+  VtxOffset += 4;
 }
 
 /*
@@ -35,12 +44,22 @@ static LilContext s_Context;
 
 void CreateContext()
 {
-  // Global initialization will go here when needed
+  s_Context.DrawLists.EmplaceBack(); // Create a DrawList
 }
 
 LilContext& GetContext()
 {
   return s_Context;
+}
+
+void DestroyContext()
+{
+  // Global initialization will go here when needed
+}
+
+LilArray<LilDrawList>& GetDrawLists()
+{
+  return s_Context.DrawLists;
 }
 
 } // namespace Lil
