@@ -73,7 +73,7 @@ public:
       
     T* tmp = (T*) operator new(size * sizeof(T));
 
-    for (int i = 0; i < Size; i++)
+    for (int i = 0; i < Size; ++i)
       new (&tmp[i]) T(std::move(Array[i]));
 
     for (int i = 0; i < Size; ++i)
@@ -83,6 +83,18 @@ public:
     Array = tmp;
 
     MaxSize = size;
+  }
+  
+  // Helper function that won't cause a reallocation of memory
+  void Shrink(std::size_t size) noexcept
+  {
+    if (size >= Size)
+      return;
+    
+    for (std::size_t i = Size; i < size; ++i)
+      Array[i].~T();
+    
+    Size = size;
   }
   
   void PushBack(const T& val)
@@ -214,30 +226,6 @@ constexpr LilU32 ColorFromRGB(float r, float g, float b)
 }
 
 } // namespace Lil
- 
-struct LilColor
-{
-  float r = 1.0f, g = 1.0f, b = 1.0f, a = 1.0f;
-  
-  constexpr operator LilU32() const {
-    return Lil::ColorFromRGBA(r, g, b, a);
-  }
-  
-  constexpr LilU32 ToLilU32() const { // This exists because in constexpr settings it may be easier to call this than to
-    return operator LilU32();
-  }
-  
-  constexpr LilColor(float red, float green, float blue, float alpha = 1.0f)
-    : r(red), g(green), b(blue), a(alpha) {}
-  
-  constexpr LilColor(const LilVec4& color)
-    : r(color.x), g(color.y), b(color.z), a(color.w) {}
-  
-  constexpr LilColor(const LilVec3& color)
-    : r(color.x), g(color.y), b(color.z), a(1.0f) {}
-  
-  constexpr LilColor() = default;
-};
 
 /*
 --------------------------------------------------

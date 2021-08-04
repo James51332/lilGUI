@@ -8,9 +8,9 @@
 
 void LilDrawList::Clear()
 {
-  VtxArray.Clear();
-  IdxArray.Clear();
-  DrawCmds.Clear();
+  VtxArray.Shrink(0);
+  IdxArray.Shrink(0);
+  DrawCmds.Shrink(0);
   VtxOffset = 0;
 }
 
