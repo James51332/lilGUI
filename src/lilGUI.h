@@ -19,11 +19,12 @@ very slow so it may benefit performance in some instances.
 
 template <typename T>
 class LilArray {
+  
   std::size_t Size;
   std::size_t MaxSize;
   T* Array;
-public:
   
+public:
   
   using ValueType = T;
   using Iterator = T*;
@@ -138,9 +139,7 @@ LilVectors are convenience structs for floats.
 -- TODO --
 1) N/A
 */
-
-using LilU32 = uint32_t;
-
+                     
 struct LilVec2
 {
   float x, y;
@@ -185,6 +184,79 @@ struct LilVec4
 
 /*
 --------------------------------------------------
+----- SECTION (LilColors) ------------------------
+--------------------------------------------------
+ 
+Utility functions for handling colors within the library
+ 
+-- TODO --
+1) Create system for different types of texture IDs
+*/
+
+using LilU32 = uint32_t;
+
+namespace Lil
+{
+
+constexpr LilU32 ColorFromRGBA(float r, float g, float b, float a)
+{
+  return (static_cast<int>(255.0f * a) << 24) +
+         (static_cast<int>(255.0f * b) << 16) +
+         (static_cast<int>(255.0f * g) << 8) +
+         (static_cast<int>(255.0f * r));
+}
+
+constexpr LilU32 ColorFromRGB(float r, float g, float b)
+{
+  return (static_cast<int>(255.0f * b) << 16) +
+         (static_cast<int>(255.0f * g) << 8) +
+         (static_cast<int>(255.0f * r));
+}
+
+} // namespace Lil
+ 
+struct LilColor
+{
+  float r = 1.0f, g = 1.0f, b = 1.0f, a = 1.0f;
+  
+  constexpr operator LilU32() const {
+    return Lil::ColorFromRGBA(r, g, b, a);
+  }
+  
+  constexpr LilU32 ToLilU32() const { // This exists because in constexpr settings it may be easier to call this than to
+    return operator LilU32();
+  }
+  
+  constexpr LilColor(float red, float green, float blue, float alpha = 1.0f)
+    : r(red), g(green), b(blue), a(alpha) {}
+  
+  constexpr LilColor(const LilVec4& color)
+    : r(color.x), g(color.y), b(color.z), a(color.w) {}
+  
+  constexpr LilColor(const LilVec3& color)
+    : r(color.x), g(color.y), b(color.z), a(1.0f) {}
+  
+  constexpr LilColor() = default;
+};
+
+/*
+--------------------------------------------------
+----- SECTION (LilFont) --------------------------
+--------------------------------------------------
+ 
+I think we'll somehow use this for fonts somehow...
+ 
+-- TODO --
+1) N/A
+*/
+
+struct LilFont
+{
+  
+};
+
+/*
+--------------------------------------------------
 ----- SECTION (LilDrawList) ----------------------
 --------------------------------------------------
  
@@ -192,7 +264,7 @@ LilDrawList is essentially the interface for the client-side
 renderer to obtain geometry data. It's
  
 -- TODO --
-1) N/A
+1) Create system for different types of texture IDs
 */
 
 struct LilVtx
@@ -205,19 +277,35 @@ struct LilVtx
     : Pos(pos), UV(uv), Color(color) {}
   
   LilVtx()
-    : Pos(), UV(), Color(0x7fffffff) {}
+    : Pos(), UV(), Color(0xffffffff) {}
 };
 
 using LilIdx = unsigned short;
+
+struct LilDrawCmd
+{
+  LilU32 Size;
+  LilU32 IdxOffset;
+  LilU32 TextureID;
+  
+  LilDrawCmd(LilU32 size, LilU32 idxOffset, LilU32 texID)
+    : Size(size), IdxOffset(idxOffset), TextureID(texID) {}
+  
+  LilDrawCmd()
+    : Size(0), IdxOffset(0), TextureID(0) {}
+};
 
 struct LilDrawList
 {
   LilArray<LilVtx> VtxArray;
   LilArray<LilIdx> IdxArray;
+  LilArray<LilDrawCmd> DrawCmds; // Draw Commands should usually exist per clipping rect.
   LilU32 VtxOffset = 0;
   
   void Clear();
-  void PushRect(const LilVec2& min, const LilVec2& max, LilU32 color = 0x7fffffff);
+  void Render();
+  
+  void PushRect(const LilVec2& min, const LilVec2& max, LilU32 color = 0xffffffff);
 };
 
 /*
@@ -239,6 +327,7 @@ class LilContext
 {
 public:
   LilArray<LilDrawList> DrawLists; // I'm currently thinking each window will have a drawList
+  LilFont ActiveFont;
 };
 
 namespace Lil
@@ -249,5 +338,7 @@ LilContext& GetContext();
 void DestroyContext();
 
 LilArray<LilDrawList>& GetDrawLists();
+void BeginFrame();
+void RenderFrame();
 
 } // namespace Lil

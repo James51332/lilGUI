@@ -1,6 +1,6 @@
-#include <lilGUI.h>
-
 #include "lilRenderer.h"
+
+#include <lilGUI.h>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -48,14 +48,14 @@ int main()
   {
     glfwPollEvents();
       
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     LilRenderer::Begin();
     
     // Temporary API
-    Lil::GetDrawLists()[0].PushRect({-0.5f, -0.5f}, {0.0f, 0.0f});
-    Lil::GetDrawLists()[0].PushRect({0.25f, 0.25f}, {0.5f, 0.5f});
+    Lil::GetDrawLists()[0].PushRect({-0.75f, -0.5f}, {0.0f, 0.0f});
+    Lil::GetDrawLists()[0].PushRect({0.25f, 0.25f}, {0.5f, 0.5f}, Lil::ColorFromRGBA(1.0f, 1.0f, 0.0f, 1.0f));
     Lil::GetDrawLists()[0].PushRect({-0.5f, 0.5f}, {0.0f, 1.0f});
     
     LilRenderer::End();

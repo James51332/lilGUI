@@ -18,7 +18,7 @@ public:
 private:
   struct LilRendererData
   {
-    GLuint VAO, VBO, IBO, ShaderProgram;
+    GLuint VAO, VBO, IBO, ShaderProgram, TextureID;
   };
   
   static LilRendererData s_Data;
