@@ -16,7 +16,7 @@ void LilDrawList::Clear()
 
 void LilDrawList::Render()
 {
-  // This system should grow more complicated when we support textures and clipping rects
+  // This system will grow more complicated when we support textures and clipping rects
   DrawCmds.EmplaceBack(static_cast<LilU32>(IdxArray.GetSize()), 0, 0);
 }
 
@@ -78,6 +78,25 @@ void RenderFrame()
 {
   for (auto& drawList : GetDrawLists())
     drawList.Render();
+}
+
+} // namespace Lil
+
+/*
+--------------------------------------------------
+----- IMPLEMENTATION (LilDraw) -------------------
+--------------------------------------------------
+*/
+
+namespace Lil
+{
+
+void Rect(float x, float y, float w, float h, LilU32 color)
+{
+  if (w <= 0 || h <= 0)
+    return;
+  
+  GetDrawLists()[0].PushRect({x, y}, {x + w, y + h}, color);
 }
 
 } // namespace Lil

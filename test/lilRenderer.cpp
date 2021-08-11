@@ -1,7 +1,7 @@
 #include "lilRenderer.h"
 
 #include <lilGUI.h>
-#include <iostream>
+//#include <iostream>
 
 LilRenderer::LilRendererData LilRenderer::s_Data;
 
@@ -39,7 +39,7 @@ void LilRenderer::Init()
 
   void main()
   {
-    FragColor = v_Color * texture(u_Texture, v_UV);
+    FragColor = v_Color * texture(u_Texture, v_UV.xy);
   })";
 
   // 2) Init GL State
@@ -57,7 +57,7 @@ void LilRenderer::Init()
   if (!success)
   {
       glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-      std::cout << "Vertex Shader Failed to Compile:" << std::endl << infoLog << std::endl;
+      //std::cout << "Vertex Shader Failed to Compile:" << std:://endl << infoLog << std::endl;
   }
   
   unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -68,7 +68,7 @@ void LilRenderer::Init()
   if (!success)
   {
     glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-    std::cout << "Fragment Shader Failed to Compile:" << std::endl << infoLog << std::endl;
+    //std::cout << "Fragment Shader Failed to Compile:" << std::endl << infoLog << std::endl;
   }
 
   // 4) Link Shaders
@@ -81,7 +81,7 @@ void LilRenderer::Init()
   if (!success)
   {
     glGetProgramInfoLog(s_Data.ShaderProgram, 512, NULL, infoLog);
-    std::cout << "Shader Failed to Link" << infoLog << std::endl;
+    //std::cout << "Shader Failed to Link" << infoLog << std::endl;
   }
   
   // 5) Clean Up Shaders
@@ -113,11 +113,13 @@ void LilRenderer::Init()
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   
   // 7) Generate Texture
-  uint32_t white = 0xffffffff;
   glGenTextures(1, &s_Data.TextureID);
   glBindTexture(GL_TEXTURE_2D, s_Data.TextureID);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &white);
-               
+  
+  uint32_t data = 0xffffffff;
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &data);
+  glGenerateMipmap(GL_TEXTURE_2D); // CRUCIAL LINE ON MACOS
+  
   // 8) Create LilContext
   Lil::CreateContext();
 }
@@ -130,6 +132,7 @@ void LilRenderer::Terminate()
   glDeleteBuffers(1, &s_Data.VBO);
   glDeleteBuffers(1, &s_Data.IBO);
   glDeleteProgram(s_Data.ShaderProgram);
+  glDeleteTextures(1, &s_Data.TextureID);
 }
 
 void LilRenderer::Begin()
@@ -144,8 +147,8 @@ void LilRenderer::End()
   for (auto& drawList : Lil::GetDrawLists())
   {
     glUseProgram(s_Data.ShaderProgram);
-    GLint ts = glGetUniformLocation(s_Data.ShaderProgram, "u_Texture");
-    glUniform1i(ts, 0);
+//    GLint ts = glGetUniformLocation(s_Data.ShaderProgram, "u_Texture");
+//    glUniform1i(ts, 0);
     
     
     typedef void (APIENTRYP PFNGLBUFFERSUBDATAPROC)(GLenum target, GLintptr offset, GLsizeiptr size, const void *data);
@@ -165,11 +168,10 @@ void LilRenderer::End()
     
     for (auto& command : drawList.DrawCmds)
     {
-      glActiveTexture(GL_TEXTURE0);
+      //glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, s_Data.TextureID);
       //if (command.TextureID)
         //glBindTexture(GL_TEXTURE_2D, command.TextureID);
-
-        glBindTexture(GL_TEXTURE_2D, s_Data.TextureID);
       
       glDrawElements(GL_TRIANGLES, static_cast<int>(command.Size), GL_UNSIGNED_SHORT, (const void*)static_cast<long>(command.IdxOffset));
     }

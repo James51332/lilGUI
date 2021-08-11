@@ -4,14 +4,14 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
+#include <printf.h>
 
 int main()
 {
   // 1) Iniitalize GLFW
   if (!glfwInit())
   {
-    std::cout << "Failed to initialize GLFW" << std::endl;
+    //std::cout << "Failed to initialize GLFW" << std::endl;
     return -1;
   }
   
@@ -36,7 +36,7 @@ int main()
   // 3) Initialize GLAD
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
   {
-    std::cout << "Failed to initialize GLAD" << std::endl;
+    //std::cout << "Failed to initialize GLAD" << std::endl;
     return -1;
   }
   
@@ -53,10 +53,7 @@ int main()
     
     LilRenderer::Begin();
     
-    // Temporary API
-    Lil::GetDrawLists()[0].PushRect({-0.75f, -0.5f}, {0.0f, 0.0f});
-    Lil::GetDrawLists()[0].PushRect({0.25f, 0.25f}, {0.5f, 0.5f}, Lil::ColorFromRGBA(1.0f, 1.0f, 0.0f, 1.0f));
-    Lil::GetDrawLists()[0].PushRect({-0.5f, 0.5f}, {0.0f, 1.0f});
+    Lil::Rect(0.0f, 0.0f, 0.5f, 0.5f, 0xff0000ff);
     
     LilRenderer::End();
 
